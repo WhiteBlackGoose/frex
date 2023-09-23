@@ -18,30 +18,16 @@
             rust-analyzer
             vscode-extensions.vadimcn.vscode-lldb
 
+            rustPlatform.bindgenHook
             cmake
-            pkg-config
-            fontconfig
-            libGL
-            xorg.libX11
-            xorg.libX11.dev
-            xorg.libXi
-            xorg.libXcursor
-            xorg.libXrandr
-            xorg.libXft
-            xorg.libXft.dev
-            xorg.libXinerama
-            libglvnd
-            libclang
-            clang
           ];
         in
         {
           default =
             pkgs.mkShell {
               inherit nativeBuildInputs;
+              buildInputs = [ pkgs.clang ];
               VSCODE_CODELLDB = "${pkgs.vscode-extensions.vadimcn.vscode-lldb}";
-              LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:${ with pkgs; lib.makeLibraryPath nativeBuildInputs}:/run/opengl-driver/lib";
-              LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
             };
         });
 
