@@ -2,8 +2,10 @@
   description = "Frex - Fractal Explorer";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  inputs.nixgl.url = "github:guibou/nixGL";
+  inputs.nixgl.inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-  outputs = { nixpkgs, ... }:
+  outputs = { nixpkgs, nixgl, ... }:
     let
       systems = [ "aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux" ];
     in
@@ -17,6 +19,8 @@
             rustc
             rust-analyzer
             vscode-extensions.vadimcn.vscode-lldb
+            rustfmt
+            clippy
 
             rustPlatform.bindgenHook
             cmake
@@ -30,13 +34,18 @@
             xorg.libXft.dev 
             xorg.libXinerama
             libglvnd
+            (writeScriptBin "brun" "cargo build && nixGLIntel ./target/debug/frex")
           ];
         in
         {
           default =
             pkgs.mkShell {
               inherit nativeBuildInputs;
+              buildInputs = with pkgs; [
+                nixgl.packages.${system}.nixGLIntel
+              ];
               VSCODE_CODELLDB = "${pkgs.vscode-extensions.vadimcn.vscode-lldb}";
+              LD_LIBRARY_PATH="/run/opengl-driver";
             };
         });
 
