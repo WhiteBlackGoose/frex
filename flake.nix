@@ -12,43 +12,35 @@
       devShells = nixpkgs.lib.genAttrs systems (system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+          nativeBuildInputs = with pkgs; [
+            cargo
+            rustc
+            rust-analyzer
+            vscode-extensions.vadimcn.vscode-lldb
+
+            cmake
+            pkg-config
+            fontconfig
+            libGL
+            xorg.libX11
+            xorg.libX11.dev
+            xorg.libXi
+            xorg.libXcursor
+            xorg.libXrandr
+            xorg.libXft
+            xorg.libXft.dev
+            xorg.libXinerama
+            libglvnd
+            libclang
+            clang
+          ];
         in
         {
           default =
             pkgs.mkShell {
-              buildInputs = with pkgs; [
-                cargo
-                rustc
-                rust-analyzer
-                vscode-extensions.vadimcn.vscode-lldb
-
-                cmake
-                pkg-config
-                fontconfig
-                gcc
-                libglvnd
-                libclang
-              ] ++ (with pkgs.xorg; [
-                libX11
-                libX11.dev
-                libXi
-                libXcursor
-                libXrandr
-                libXft
-                libXft.dev
-                libXinerama
-              ]);
+              inherit nativeBuildInputs;
               VSCODE_CODELLDB = "${pkgs.vscode-extensions.vadimcn.vscode-lldb}";
-              LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:${ with pkgs; lib.makeLibraryPath [
-              libGL
-              xorg.libX11
-              xorg.libXi
-              xorg.libXcursor
-              xorg.libXrandr
-              libglvnd
-              libclang
-              clang
-            ] }:/run/opengl-driver/lib";
+              LD_LIBRARY_PATH = "$LD_LIBRARY_PATH:${ with pkgs; lib.makeLibraryPath nativeBuildInputs}:/run/opengl-driver/lib";
               LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
             };
         });
