@@ -20,13 +20,22 @@
 
             rustPlatform.bindgenHook
             cmake
+            ninja
+            xorg.libX11     
+            xorg.libX11.dev 
+            xorg.libXi      
+            xorg.libXcursor 
+            xorg.libXrandr  
+            xorg.libXft     
+            xorg.libXft.dev 
+            xorg.libXinerama
+            libglvnd
           ];
         in
         {
           default =
             pkgs.mkShell {
               inherit nativeBuildInputs;
-              buildInputs = [ pkgs.clang ];
               VSCODE_CODELLDB = "${pkgs.vscode-extensions.vadimcn.vscode-lldb}";
             };
         });
