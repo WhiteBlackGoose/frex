@@ -13,13 +13,36 @@
         {
           default =
           pkgs.mkShell {
-            buildInputs = [
-              pkgs.cargo
-              pkgs.rustc
-              pkgs.rust-analyzer
-              pkgs.vscode-extensions.vadimcn.vscode-lldb
-            ];
+            buildInputs = with pkgs; [
+              cargo
+              rustc
+              rust-analyzer
+              vscode-extensions.vadimcn.vscode-lldb
+
+              cmake pkg-config fontconfig
+              gcc
+              libglvnd
+              libclang
+            ] ++ (with pkgs.xorg; [
+              libX11 libX11.dev
+              libXi
+              libXcursor
+              libXrandr
+              libXft libXft.dev
+              libXinerama
+            ]);
             VSCODE_CODELLDB = "${pkgs.vscode-extensions.vadimcn.vscode-lldb}";
+            LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${ with pkgs; lib.makeLibraryPath [
+              libGL
+              xorg.libX11
+              xorg.libXi
+              xorg.libXcursor
+              xorg.libXrandr
+              libglvnd
+              libclang
+              clang
+            ] }:/run/opengl-driver/lib";
+            LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
           };
         });
 
@@ -38,17 +61,7 @@
             ];
 
             buildInputs = [
-              pkgs.imagemagick
             ];
-
-            # TODO: add elvish and powershell
-            postInstall = ''
-              installManPage ./artifacts/tri.1
-              installShellCompletion ./artifacts/_tri
-              installShellCompletion ./artifacts/tri.bash
-              installShellCompletion ./artifacts/tri.fish
-              wrapProgram $out/bin/tri --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.imagemagick ]}
-            '';
 
             cargoSha256 = "";
             meta = with pkgs.lib; {
