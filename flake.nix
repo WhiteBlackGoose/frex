@@ -35,6 +35,7 @@
             xorg.libXinerama
             libglvnd
             (writeScriptBin "brun" "cargo build && nixGLIntel ./target/debug/frex")
+            (writeScriptBin "brun-release" "cargo build --release && nixGLIntel ./target/release/frex")
           ];
         in
         {

@@ -10,6 +10,12 @@ pub struct Mandelbrot<R: Colorizer> {
     col: R,
 }
 
+impl<R: Colorizer> Mandelbrot<R> {
+    pub fn new(col: R) -> Self {
+        Mandelbrot { col }
+    }
+}
+
 impl<R, C> Fractal<C> for Mandelbrot<R>
 where
     R: Colorizer,
