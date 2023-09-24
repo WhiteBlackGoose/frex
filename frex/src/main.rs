@@ -8,8 +8,8 @@ use raylib::{ffi::DisableCursor, prelude::*};
 mod colors;
 mod fractals;
 
-const WINDOW_WIDTH: i32 = 200;
-const WINDOW_HEIGHT: i32 = 200;
+const WINDOW_WIDTH: i32 = 600;
+const WINDOW_HEIGHT: i32 = 600;
 
 fn main() {
     let (mut rl, thread) = raylib::init()
@@ -28,15 +28,27 @@ fn main() {
 
     let mandel = Mandelbrot::new(ColorizerHue {});
 
+    let (mut rw, mut rh, mut rx, mut ry) = (2.2, 2.2, -1.5, -1.1);
     while !rl.window_should_close() {
-        let mut d = rl.begin_drawing(&thread);
+        let zc = 1.2;
+        let zcc = (1.0 - 1.0 / zc) / 2.0;
+        let mc = 0.1;
+        (rx, ry, rw, rh) = match rl.get_key_pressed() {
+            Some(KeyboardKey::KEY_EQUAL) => (rx + rw * zcc, ry + rh * zcc, rw / zc, rh / zc),
+            Some(KeyboardKey::KEY_MINUS) => (rx - rw * zcc, ry - rh * zcc, rw * zc, rh * zc),
+            Some(KeyboardKey::KEY_H) => (rx - rw * mc, ry, rw, rh),
+            Some(KeyboardKey::KEY_J) => (rx, ry + rh * mc, rw, rh),
+            Some(KeyboardKey::KEY_K) => (rx, ry - rh * mc, rw, rh),
+            Some(KeyboardKey::KEY_L) => (rx + rw * mc, ry, rw, rh),
+            _ => (rx, ry, rw, rh),
+        };
 
+        let mut d = rl.begin_drawing(&thread);
         d.clear_background(Color::BLACK);
         {
             let mut d2 = d.begin_mode2D(camera);
             let width = d2.get_screen_width();
             let height = d2.get_screen_height();
-            let (rw, rh, rx, ry) = (2.2, 2.2, -1.5, -1.1);
             for x in 0..width {
                 for y in 0..height {
                     let fx = x as f32 / width as f32 * rw + rx;
