@@ -1,9 +1,10 @@
 use raylib::{ffi::DisableCursor, prelude::*};
 
-const WINDOW_WIDTH: i32 = 1500;
-const WINDOW_HEIGHT: i32 = 1500;
+const WINDOW_WIDTH: i32 = 900;
+const WINDOW_HEIGHT: i32 = 900;
 
-const PALETTE: [Vector4; 5] = [
+// https://stackoverflow.com/questions/16500656/which-color-gradient-is-used-to-color-mandelbrot-in-wikipedia
+const WK_PALETTE: [Vector4; 5] = [
     Vector4::new(0f32, 7f32, 100f32, 255f32),     //
     Vector4::new(32f32, 107f32, 203f32, 255f32),  //
     Vector4::new(237f32, 255f32, 255f32, 255f32), //
@@ -11,8 +12,13 @@ const PALETTE: [Vector4; 5] = [
     Vector4::new(0f32, 2f32, 0f32, 255f32),       //
 ];
 
+const WK_POSITIONS: [f32; 5] = [0.16, 0.42, 0.6425, 0.8575, 1.0];
+
 fn main() {
-    let (mut rl, thread) = raylib::init().size(WINDOW_WIDTH, WINDOW_HEIGHT).build();
+    let (mut rl, thread) = raylib::init()
+        .size(WINDOW_WIDTH, WINDOW_HEIGHT)
+        .title("Frex!")
+        .build();
 
     rl.set_target_fps(120);
 
@@ -34,8 +40,9 @@ fn main() {
     let size_loc = shader.get_shader_location("size");
     let julia_param_loc = shader.get_shader_location("julia_param");
     let wk_colors_loc = shader.get_shader_location("wk_colors");
-    //let wk_pos_loc = shader.get_shader_location("wk_pos");
-    shader.set_shader_value_v(wk_colors_loc, &PALETTE);
+    let wk_pos_loc = shader.get_shader_location("wk_pos");
+    shader.set_shader_value_v(wk_colors_loc, &WK_PALETTE);
+    shader.set_shader_value_v(wk_pos_loc, &WK_POSITIONS);
 
     let (mut rw, mut rh, mut rx, mut ry) = (2.2, 2.2, -1.5, -1.1);
     while !rl.window_should_close() {
