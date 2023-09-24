@@ -1,23 +1,20 @@
 use raylib::{ffi::DisableCursor, prelude::*};
 
-const WINDOW_WIDTH: i32 = 600;
-const WINDOW_HEIGHT: i32 = 600;
+const WINDOW_WIDTH: i32 = 1500;
+const WINDOW_HEIGHT: i32 = 1500;
+
+const PALETTE: [Vector4; 5] = [
+    Vector4::new(0f32, 7f32, 100f32, 255f32),     //
+    Vector4::new(32f32, 107f32, 203f32, 255f32),  //
+    Vector4::new(237f32, 255f32, 255f32, 255f32), //
+    Vector4::new(255f32, 170f32, 0f32, 255f32),   //
+    Vector4::new(0f32, 2f32, 0f32, 255f32),       //
+];
 
 fn main() {
-    let (mut rl, thread) = raylib::init()
-        //.size(WINDOW_WIDTH, WINDOW_HEIGHT)
-        .fullscreen()
-        .size(2880, 1800)
-        .build();
+    let (mut rl, thread) = raylib::init().size(WINDOW_WIDTH, WINDOW_HEIGHT).build();
 
-    let mut camera = Camera2D {
-        target: Vector2::new(0.0, 0.0),
-        offset: Vector2::new(0.0, 0.0),
-        rotation: 0.0,
-        zoom: 1.0,
-    };
-
-    rl.set_target_fps(260);
+    rl.set_target_fps(120);
 
     let mut shader = rl.load_shader(&thread, None, Some("./julia.fs")).unwrap();
     let mut text = rl
@@ -36,6 +33,9 @@ fn main() {
     let pos_loc = shader.get_shader_location("pos");
     let size_loc = shader.get_shader_location("size");
     let julia_param_loc = shader.get_shader_location("julia_param");
+    let wk_colors_loc = shader.get_shader_location("wk_colors");
+    //let wk_pos_loc = shader.get_shader_location("wk_pos");
+    shader.set_shader_value_v(wk_colors_loc, &PALETTE);
 
     let (mut rw, mut rh, mut rx, mut ry) = (2.2, 2.2, -1.5, -1.1);
     while !rl.window_should_close() {
