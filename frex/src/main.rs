@@ -1,21 +1,13 @@
-use arr_macro::arr;
-use colors::ColorizerHue;
-use fractals::{Fractal, Mandelbrot};
-use num::complex::Complex32;
-use rand::prelude::*;
 use raylib::{ffi::DisableCursor, prelude::*};
 
-mod colors;
-mod fractals;
-
-const WINDOW_WIDTH: i32 = 2000;
-const WINDOW_HEIGHT: i32 = 1500;
+const WINDOW_WIDTH: i32 = 600;
+const WINDOW_HEIGHT: i32 = 600;
 
 fn main() {
     let (mut rl, thread) = raylib::init()
-        .size(WINDOW_WIDTH, WINDOW_HEIGHT)
-        .title("Hello, world!")
-        //.fullscreen()
+        //.size(WINDOW_WIDTH, WINDOW_HEIGHT)
+        .fullscreen()
+        .size(2880, 1800)
         .build();
 
     let mut camera = Camera2D {
@@ -27,10 +19,7 @@ fn main() {
 
     rl.set_target_fps(260);
 
-    let mandel = Mandelbrot::new(ColorizerHue {});
-    let mut shader = rl
-        .load_shader(&thread, None, Some("./mandelbrot.fs"))
-        .unwrap();
+    let mut shader = rl.load_shader(&thread, None, Some("./julia.fs")).unwrap();
     let mut text = rl
         .load_render_texture(
             &thread,
@@ -46,6 +35,7 @@ fn main() {
     );
     let pos_loc = shader.get_shader_location("pos");
     let size_loc = shader.get_shader_location("size");
+    let julia_param_loc = shader.get_shader_location("julia_param");
 
     let (mut rw, mut rh, mut rx, mut ry) = (2.2, 2.2, -1.5, -1.1);
     while !rl.window_should_close() {
@@ -63,6 +53,13 @@ fn main() {
         };
         shader.set_shader_value(pos_loc, [rx as f32, ry as f32]);
         shader.set_shader_value(size_loc, [rw as f32, rh as f32]);
+        shader.set_shader_value(
+            julia_param_loc,
+            [
+                -0.5251993f32 + rl.get_mouse_x() as f32 / rl.get_screen_width() as f32 / 50.0,
+                -0.5251993f32 + rl.get_mouse_y() as f32 / rl.get_screen_height() as f32 / 50.0,
+            ],
+        );
 
         let mut d = rl.begin_drawing(&thread);
         {
