@@ -8,13 +8,14 @@ use raylib::{ffi::DisableCursor, prelude::*};
 mod colors;
 mod fractals;
 
-const WINDOW_WIDTH: i32 = 600;
-const WINDOW_HEIGHT: i32 = 600;
+const WINDOW_WIDTH: i32 = 2000;
+const WINDOW_HEIGHT: i32 = 1500;
 
 fn main() {
     let (mut rl, thread) = raylib::init()
         .size(WINDOW_WIDTH, WINDOW_HEIGHT)
         .title("Hello, world!")
+        //.fullscreen()
         .build();
 
     let mut camera = Camera2D {
@@ -24,9 +25,27 @@ fn main() {
         zoom: 1.0,
     };
 
-    rl.set_target_fps(60);
+    rl.set_target_fps(260);
 
     let mandel = Mandelbrot::new(ColorizerHue {});
+    let mut shader = rl
+        .load_shader(&thread, None, Some("./mandelbrot.fs"))
+        .unwrap();
+    let mut text = rl
+        .load_render_texture(
+            &thread,
+            rl.get_screen_width() as u32,
+            rl.get_screen_height() as u32,
+        )
+        .unwrap();
+
+    let resolution_loc = shader.get_shader_location("resolution");
+    shader.set_shader_value_v(
+        resolution_loc,
+        &[rl.get_screen_width() as f32, rl.get_screen_height() as f32],
+    );
+    let pos_loc = shader.get_shader_location("pos");
+    let size_loc = shader.get_shader_location("size");
 
     let (mut rw, mut rh, mut rx, mut ry) = (2.2, 2.2, -1.5, -1.1);
     while !rl.window_should_close() {
@@ -42,21 +61,25 @@ fn main() {
             Some(KeyboardKey::KEY_L) => (rx + rw * mc, ry, rw, rh),
             _ => (rx, ry, rw, rh),
         };
+        shader.set_shader_value(pos_loc, [rx as f32, ry as f32]);
+        shader.set_shader_value(size_loc, [rw as f32, rh as f32]);
 
         let mut d = rl.begin_drawing(&thread);
+        {
+            let mut d2 = d.begin_texture_mode(&thread, &mut text);
+            d2.draw_rectangle(
+                0,
+                0,
+                d2.get_screen_width(),
+                d2.get_screen_height(),
+                Color::GRAY,
+            );
+        }
         d.clear_background(Color::BLACK);
         {
-            let mut d2 = d.begin_mode2D(camera);
-            let width = d2.get_screen_width();
-            let height = d2.get_screen_height();
-            for x in 0..width {
-                for y in 0..height {
-                    let fx = x as f32 / width as f32 * rw + rx;
-                    let fy = y as f32 / height as f32 * rh + ry;
-                    d2.draw_pixel(x, y, mandel.calc(Complex32::new(fx, fy)));
-                }
-            }
-            d2.draw_fps(0, 0);
+            let mut sh = d.begin_shader_mode(&shader);
+            sh.draw_texture(&mut text, 0, 0, Color::GRAY);
         }
+        d.draw_fps(0, 0);
     }
 }
